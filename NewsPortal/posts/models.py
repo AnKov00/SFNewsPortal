@@ -1,9 +1,8 @@
 from django.db import models
-
-
-from NewsPortal.account.models import User
+from django.contrib.auth.models import User
 
 class Author(models.Model):
+    name = models.CharField(max_length=30, unique=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     rating = models.IntegerField(default=0)
 
@@ -30,14 +29,12 @@ class Post(models.Model):
         (article, 'Статья')
     ]
     author = models.ForeignKey(Author, on_delete= models.CASCADE)
-    choice = models.CharField(max_length=2,
+    type = models.CharField(max_length=2,
                               choices=NEWS,
                               default=article)
     time_create = models.DateTimeField(auto_now_add=True)
-    category_post = models.ManyToManyField(Category,
-                                         through='PostCategory',
-                                         through_fields=('category',
-                                         'post'))
+    category = models.ManyToManyField(Category,
+                                         through='PostCategory')
     title = models.CharField(max_length=255)
     text_news = models.TextField()
     rating_news = models.IntegerField(default=0)

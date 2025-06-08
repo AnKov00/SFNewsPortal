@@ -1,0 +1,61 @@
+1. Создать двух пользователей
+user1=User.objects.create_user(username='user1')
+user2=User.objects.create_user(username='user2')
+
+2. Создать 2 объекта модели Автор
+author1=Author.objects.create(name='author1', user=user1)
+author2=Author.objects.create(name='author2', user=user2)
+
+3. Добавить 4 категории в модель Category
+joke = Category.objects.create(name='Шутки')
+review = Category.objects.create(name='Обзор')
+life_story = Category.objects.create(name='Истории из жизни')
+news_post = Category.objects.create(name='Новости')
+
+4. Добавить 2 статьи и 1 новость.
+article1=Post.objects.create(author=author1, type='st', title='Спасибо, Wildberrie', text_news='Жена любитель посидеть на WB, постоянно заказывала кучу вещей. По карману это не слишком било, больше всего не нравилось, что меня частенько отправляли прогуляться до пвз, забрать заказ или вернуть. Когда ввели платный возврат на площадке на некоторые позиции - количество заказов значительно уменьшилось, но они все же продолжались. И вот ввели платную доставку… Мою жену как отрезало, ни одного заказа больше! Пусть доставка 10-20 рублей стоит, все равно - нет.')
+article2=Post.objects.create(author=author1, type='st', title='Барсик', text_news='Очень похожая ситуация сейчас. Только пока до суда не дошло, в целом, думаю, что и не дойдет. У бабушки с дедушкой трое детей: моя мама, тётя и дядя. С дядей отношений никто не поддерживал, он в своё время очень обиделся, что родители отказались отдать ему квартиру (была ещё одна в наследство), а продали её и разделили между своими детьми. Мотивировал так: он старший, он первенец, единственный мальчик, и ему квартира положена. Ну, собственно, ба и де положили на его мнение и разделили деньги поровну. Дядя деньги взял, но общение прекратил. Даже когда бабушка сломала шейку бедра, не стал её навещать, никакой помощи не было.')
+article3=Post.objects.create(author=author2, type='nw', title='Новая фобия: в Ростове стиральная машина чуть не спалила квартиру', text_news='В Ростове стиральная машина чуть не спалила квартиру. Об этом сообщает МЧС России. Прибор загорелся во время стирки на глазах у хозяина. По словам пожарных, мужчина вовремя сориентировался. Он сбил пламя огнетушителем и подручными средствами. Спасатели прибыли на место пожара и убедились, что огонь потушен и нет тления.')
+
+5. Присвоить категории статьям.
+PostCategory.objects.create(post=article1, category=life_story)
+PostCategory.objects.create(post=article2, category=life_story)
+PostCategory.objects.create(post=article3, category=life_story)
+PostCategory.objects.create(post=article3, category=joke)
+
+6. Создать 4 комментария
+com_article1=Comment.objects.create(post=article1, user=user1, comment_text='Автар жжот, продолжай')
+com2_article1=Comment.objects.create(post=article1, user=user2, comment_text='Одной рукой печатаю, втрой слезы счастья вытираю.')
+com3_article2=Comment.objects.create(post=article2, user=user1, comment_text='Причем тут барсик?')
+com4_article3=Comment.objects.create(post=article3, user=user2, comment_text='Шутки шутками, а футки футками')
+
+7. Попробовать лайки и дизлайки
+com4_article3.like()
+com4_article3.like()
+com4_article3.like()
+com4_article3.like()
+com4_article3.dislike()
+article1.like()
+article2.dislike()
+article2.dislike()
+article2.dislike()
+com2_article1.like()
+com2_article1.like()
+com_article1.like()
+com_article1.like()
+
+8.Обновить рейтинг
+author1.update_rating()
+author2.update_rating()
+
+9. Вывести имя и рейтинг лучшего пользователя.
+Author.objects.filter().values("name", "rating").order_by("-rating")[0]
+
+10. Вывести информацию о лучшей статье.
+best_post=Post.objects.filter().order_by('-rating_news').first()
+f'Лучшая статья: создана - {best_post.time_create}, автор: {best_post.author.name}, рейтинг: {best_post.rating_news}, назавние: {best_post.title}, {best_post.preview()}'
+
+11. Вывести все комментарии к лучшей статье.
+comments_best_post=best_post.comment_set.all()
+for com in comments_best_post:
+    f'Комментарий создан: {com.time_create}, автор: {com.user}, рейтинг: {com.rating_comment}, "{com.comment_text}"'
