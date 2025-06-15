@@ -1,0 +1,23 @@
+{% extends 'default.html' %}
+{% load custom_filters %}
+{% block title %}
+Post
+{% endblock title %}
+
+{% block content %}
+   <h2>Количество статей: {{ news|length }}</h2>
+    <table>
+        <tr>
+            <td>Заголовок</td>>
+            <td>Дата</td>>
+            <td>Статья</td>>
+        </tr>
+        {% for new in news %}
+        <tr>
+            <td>{{new.title|truncatechars:20|censor}}</td>
+            <td>{{new.time_create|date:'d M Y'}}</td>
+            <td>{{new.text_news|truncatechars:20|censor}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock content %}

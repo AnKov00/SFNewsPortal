@@ -1,0 +1,13 @@
+{% extends 'default.html' %}
+{% load custom_filters %}
+{% block title %}
+Новость №{{ post.id|censor }}
+{% endblock title %}
+
+{% block content %}
+
+    <h1>{{post.title|censor}}</h1>
+    <p>{{post.time_create|date:'d M Y'}}</p>
+    <p>{{post.text_news|censor}}</p>
+
+{% endblock content %}
