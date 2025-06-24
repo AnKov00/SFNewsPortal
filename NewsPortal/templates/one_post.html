@@ -7,6 +7,7 @@
 {% block content %}
 
     <h1>{{post.title|censor}}</h1>
+    <h2>{{ post.get_type_display }}</h2>
     <p>{{post.time_create|date:'d M Y'}}</p>
     <p>{{post.text_news|censor}}</p>
 

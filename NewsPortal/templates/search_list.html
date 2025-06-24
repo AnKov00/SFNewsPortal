@@ -5,7 +5,11 @@ Post
 {% endblock title %}
 
 {% block content %}
-<h1>Все новости</h1>
+<h1>Поиск новостей</h1>
+<form action="" method="get">
+    {{ filterset.form.as_p }}
+    <input type="submit" value="Найти"/>
+</form>
     <table>
         <tr>
             <td>Заголовок</td>>
