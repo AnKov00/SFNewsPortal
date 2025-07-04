@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView,UpdateView, DeleteView
 from .models import Post
@@ -36,34 +37,27 @@ class OnePost(DetailView):
     context_object_name = 'post'
 
 
-class NewsCreate(CreateView):
+class NewsCreate(LoginRequiredMixin, CreateView):
     form_class = PostForm
     model = Post
     template_name = 'create_post.html'
 
     def form_valid(self, form):
         post = form.save(commit=False)
-        post.type = 'nw'
-        return super().form_valid(form)
+        if '/news' in self.request.path:
+            post.type = 'nw'
+            return super().form_valid(form)
+        elif '/articles' in self.request.path:
+            post.type = 'st'
+            return super().form_valid(form)
 
 
-class ArticCreate(CreateView):
+class NewsUpdate(LoginRequiredMixin, UpdateView):
     form_class = PostForm
     model = Post
     template_name = 'create_post.html'
 
-    def form_valid(self, form):
-        post = form.save(commit=False)
-        post.type = 'st'
-        return super().form_valid(form)
-
-
-class NewsUpdate(UpdateView):
-    form_class = PostForm
-    model = Post
-    template_name = 'create_post.html'
-
-class NewsDelete(DeleteView):
+class NewsDelete(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = 'post_delete.html'
     success_url = reverse_lazy('post_list')

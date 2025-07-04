@@ -39,6 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'posts',
     'django_filters',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.yandex',
 ]
 
 MIDDLEWARE = [
@@ -49,8 +53,22 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 
 ]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'yandex': {
+        # For each OAuth based provider, either add a ``SocialApp``
+        # (``socialaccount`` app) containing the required client
+        # credentials, or list them here:
+        'APP': {
+            'client_id': '9beb35fd4c0d403d940045017662fcca',
+            'secret': '2576b5fe1582459c9542623a32ed95e9',
+            'key': ''
+        }
+    }
+}
 
 ROOT_URLCONF = 'NewsPortal.urls'
 
@@ -82,6 +100,12 @@ DATABASES = {
     }
 }
 
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -125,3 +149,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATICFILES_DIRS = [BASE_DIR/'static']
+
+LOGIN_URL = 'account/login/'
+LOGIN_REDIRECT_URL = 'news/'
+ACCOUNT_FORMS = {'signup': 'posts.forms.BasicSignupForm'}
+ACCOUNT_EMAIL_VERIFICATION = 'none'
