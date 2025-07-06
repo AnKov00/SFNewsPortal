@@ -48,6 +48,19 @@
                    {% block content %}
                    {{ flatpage.content |censor}}
                    {% endblock content %}
+                      {% if user.is_authenticated %}
+                            {% with groups=user.groups.all %}
+                                {% if 'author' in groups|join:', ' %}
+                                    <p>Вы автор!</p>
+                                {% else %}
+                                    <p>Вы не автор</p>
+                                    <p><a href="/iauthor/">Стать автором</a> </p>
+                                {% endif %}
+                                <p><a href="../accounts/logout/">Выйти из системы</a> </p>
+                            {% endwith %}
+                       {% else %}
+                            <p><a href="../accounts/"> Войти в аккаунт</a> </p>
+                       {% endif %}
                </div>
            </div>
         </div>
