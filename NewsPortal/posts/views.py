@@ -1,12 +1,14 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Post
+from .models import Post, Category, UsersCategory
 from .filters import PostFilter
 from .forms import PostForm
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
+
+import os
 
 
 class PostList(ListView):
@@ -15,6 +17,12 @@ class PostList(ListView):
     template_name = 'news_list.html'
     context_object_name = 'news'
     paginate_by = 10
+
+class CategoryList(ListView):
+    model = Category
+    ordering = ['name']
+    template_name = 'category_list.html'
+    context_object_name = 'category'
 
 
 class PostSearch(ListView):
@@ -47,14 +55,16 @@ class NewsCreate(PermissionRequiredMixin, CreateView):
     model = Post
     template_name = 'create_post.html'
 
+
     def form_valid(self, form):
         post = form.save(commit=False)
         if '/news' in self.request.path:
             post.type = 'nw'
-            return super().form_valid(form)
         elif '/articles' in self.request.path:
             post.type = 'st'
-            return super().form_valid(form)
+        post.save()
+        form.save_m2m()
+        return super().form_valid(form)
 
 
 class NewsUpdate(PermissionRequiredMixin, UpdateView):
@@ -62,11 +72,13 @@ class NewsUpdate(PermissionRequiredMixin, UpdateView):
     form_class = PostForm
     model = Post
     template_name = 'create_post.html'
+    success_url = reverse_lazy('post_list')
 
 class NewsDelete(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = 'post_delete.html'
     success_url = reverse_lazy('post_list')
+
 
 
 @login_required
@@ -79,3 +91,15 @@ def make_author(request):
         author_group.user_set.add(user)
 
     return redirect('/news/')
+
+@login_required
+def subscribe_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    user = request.user
+    subscription, created = UsersCategory.objects.get_or_create(
+        user=user,
+        category=category
+    )
+    if not created:
+        subscription.delete()
+    return redirect('category')

@@ -1,0 +1,28 @@
+{% extends 'default.html' %}
+{% block title %}
+Категории
+{% endblock title %}
+
+{% block content %}
+<h1>Все категории</h1>
+    {% for cat in category %}
+        <p>{{cat.name}}</p>
+        {% if user.is_authenticated %}
+            {% if user in cat.subscribers.all %}
+                <form action="{% url 'subscribe' cat.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Отписаться</button>
+                </form>
+            {% else %}
+                <form action="{% url 'subscribe' cat.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Подписаться</button>
+                </form>
+            {% endif %}
+        {% else %}
+            <p><a href="{% url 'login' %}">Войдите</a>, чтобы подписаться</p>
+        {% endif %}
+
+    {% endfor %}
+<p><a href="/news/">Вернуться к списку статей</a></p>
+{% endblock content %}

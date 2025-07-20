@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Title</title>
+</head>
+<body>
+    <h2> Здравствуй {{ user.username }}, вот твой дайджест свежих новостей за неделю!</h2>
+    {% for post in posts %}
+        <p><a href="http://127.0.0.1:8000{{ post.get_absolute_url }}">{{post.title}}</a></p>
+    {% endfor %}
+</body>
+</html>

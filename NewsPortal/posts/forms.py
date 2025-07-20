@@ -9,7 +9,11 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ['title',
                   'text_news',
-                  'author']
+                  'author',
+                  'category']
+        widgets = {
+            'category' : forms.CheckboxSelectMultiple(),
+        }
 
 class BasicSignupForm(SignupForm):
 
