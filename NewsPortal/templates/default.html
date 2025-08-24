@@ -59,7 +59,7 @@
                                 <p><a href="../accounts/logout/">Выйти из системы</a> </p>
                             {% endwith %}
                        {% else %}
-                            <p><a href="../accounts/"> Войти в аккаунт</a> </p>
+                            <p><a href="{% url 'account_login' %}"> Войти в аккаунт</a> </p>
                        {% endif %}
                </div>
            </div>

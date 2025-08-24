@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.yandex',
     'django_apscheduler',
+    'django_redis',
 ]
 
 MIDDLEWARE = [
@@ -174,8 +175,112 @@ APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 # если задача не выполняется за 25 секунд, то она автоматически снимается, можете поставить время побольше, но как правило, это сильно бьёт по производительности сервера
 APSCHEDULER_RUN_NOW_TIMEOUT = 25  # Seconds
 
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379'#URL брокера сообщений
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'#URL брокера сообщений
 CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']#Допустимый формат данных
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+INTERNAL_IPS = [
+    '127.0.0.1',  # Add your development machine's IP address here
+]
+
+CACHES = {
+    'default':{
+        'BACKEND':'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'style': '{',
+    'formatters': {
+        'debug_formatter': '{asctime} {levelname} {message}',
+        'warning_formatter': '{asctime} {levelname} {pathname} {message}',
+        'error_formatter': '{asctime} {levelname} {message} {pathname} {exc_info}',
+        'info_file_formatter': '{asctime} {levelname} {module} {message}',
+    },
+    'filters':{
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        },
+    },
+    'handlers':{
+        'console':{
+            'level': 'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'debug_formatter',
+            'filters': ['require_debug_true'],
+        },
+        'console_warning': {
+            'level': 'WARNING',
+            'class': 'logging.StreamHandler',
+            'formatter': 'warning_formatter',
+            'filters': ['require_debug_true'],
+        },
+        'console_error': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'error_formatter',
+            'filters': ['require_debug_true'],
+        },
+        'general_log': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'general.log',
+            'formatter': 'info_file_formatter',
+            'filters': ['require_debug_false'],
+        },
+        'error_log': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'errors.log',
+            'formatter': 'error_formatter',
+        },
+        'security_log': {
+            'class': 'logging.FileHandler',
+            'filename': 'security.log',
+            'formatter': 'info_file_formatter',
+        },
+        'email_notification': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'filters': ['require_debug_false']
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'console_warning', 'console_error', 'general_log'],
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['error_log', 'email_notification',],
+            'propagate': True,
+        },
+        'django.server': {
+            'handlers': ['error_log', 'email_notification'],
+            'propagate': True,
+        },
+        'django.template': {
+            'handlers': ['error_log'],
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['error_log'],
+            'propagate': True,
+        },
+        'django.security':{
+            'handlers': ['security_log'],
+            'propagate': True,
+        }
+    }
+}

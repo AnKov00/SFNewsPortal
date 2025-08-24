@@ -19,10 +19,11 @@ def weekly_newsletter():
         for category in categories:
             subscribers = category.subscribers.all() #находим всех подписчиков категории
             for user in subscribers:
-                if user.email not in send_data:
-                    send_data[user.email]=[post]
-                else:
-                    send_data[user.email].append(post)
+                if user.email:
+                    if user.email not in send_data:
+                        send_data[user.email]=[post]
+                    else:
+                        send_data[user.email].append(post)
 
     for email, posts in send_data.items():
         user = User.objects.get(email=email)
@@ -41,49 +42,50 @@ def weekly_newsletter():
         msg.send()
 
 @shared_task
-def send_post_notifications(sender, instance, action, **kwargs):
+def send_post_notifications(id):
     print('Отправка уведомления')
-    if action == "post_add":
-        print("m2m_change сигнал сработал")
-        subscribers_data = {} # почта:категории
-        # Перебираем все категории поста
-        for post_category in instance.post_categories.all():
-            category = post_category.category  # сама категория
-            print(f'Обрабатываем категорию: {category.name}')
-            for subscriber in category.subscribers.all():
-                if not subscriber.email:
-                    continue
-                if subscriber.email not in subscribers_data:
-                    subscribers_data[subscriber.email]={
-                        'user': subscriber,
-                        'categories':set()
-                    }
-                subscribers_data[subscriber.email]['categories'].add(category.name)
-        for email, data in subscribers_data.items():
-            user = data['user']
-            categories = sorted(data['categories'])
-
-            if len(categories) == 1:
-                categories_text = f'Новая статья в вашей любимой категории {categories[0]}'
-            else:
-                categories_text = f'Новая статья в ваших любимых категориях: {', '.join(categories)}'
-                context = {
-                    'post': instance,
-                    'username': user.username,
-                    'category': categories_text,
+    instance = Post.objects.get(pk=id)
+    print("m2m_change сигнал сработал")
+    subscribers_data = {} # почта:категории
+    # Перебираем все категории поста
+    for post_category in instance.post_categories.all():
+        category = post_category.category  # сама категория
+        print(f'Обрабатываем категорию: {category.name}')
+        for subscriber in category.subscribers.all():
+            if not subscriber.email:
+                continue
+            if subscriber.email not in subscribers_data:
+                subscribers_data[subscriber.email]={
+                    'user': subscriber,
+                    'categories':set()
                 }
-            html_content = render_to_string('mail_template/post_create.html', context)
-            text_content = f"""
-                            Здравствуйте, {user.username}!
-                            Новая статья в {categories_text}: {instance.title}
-                            Краткое содержание: {instance.text_news[:50]}...
-                            Ссылка: http://127.0.0.1:8000/news/{instance.id}
-                            """
-            msg = EmailMultiAlternatives(
-                subject=f'Новый пост: {instance.title}',
-                from_email= settings.EMAIL_HOST_USER,
-                to=[email]
-            )
-            msg.attach_alternative(html_content, 'text/html')
-            msg.send()
-            print(f"Отправлено письмо для {email} по категориям: {categories_text}")
+            subscribers_data[subscriber.email]['categories'].add(category.name)
+    for email, data in subscribers_data.items():
+        user = data['user']
+        categories = sorted(data['categories'])
+
+        if len(categories) == 1:
+            categories_text = f'Новая статья в вашей любимой категории {categories[0]}'
+        else:
+            categories_text = f"Новая статья в ваших любимых категориях: {', '.join(categories)}"
+        context = {
+            'post': instance,
+            'username': user.username,
+            'category': categories_text,
+        }
+        html_content = render_to_string('mail_template/post_create.html', context)
+        text_content = f"""
+                        Здравствуйте, {user.username}!
+                        Новая статья в {categories_text}: {instance.title}
+                        Краткое содержание: {instance.text_news[:50]}...
+                        Ссылка: http://127.0.0.1:8000/news/{instance.id}
+                        """
+        msg = EmailMultiAlternatives(
+            subject=f'Новый пост: {instance.title}',
+            from_email= settings.EMAIL_HOST_USER,
+            to=[email],
+            body=text_content
+        )
+        msg.attach_alternative(html_content, 'text/html')
+        msg.send()
+        print(f"Отправлено письмо для {email} по категориям: {categories}")

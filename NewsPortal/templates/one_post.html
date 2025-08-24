@@ -10,5 +10,7 @@
     <h2>{{ post.get_type_display }}</h2>
     <p>{{post.time_create|date:'d M Y'}}</p>
     <p>{{post.text_news|censor}}</p>
-
+    {% if user.is_authenticated %}
+        <p><a href="news/{{ post.id }}/edit">Изменить</a> </p>
+    {% endif %}
 {% endblock content %}

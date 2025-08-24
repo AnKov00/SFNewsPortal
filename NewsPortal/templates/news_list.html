@@ -16,7 +16,13 @@ Post
         <hr>
         {% for new in news %}
         <tr>
-            <td><a href="/news/{{ new.id }}/edit">{{new.title|truncatechars:20|censor}}</a></td>
+            <td>
+                {% if user.is_authenticated %}
+                      <a href="/news/{{ new.id }}/edit">{{ new.title|truncatechars:20|censor }}</a>
+                {% else %}
+                      <a href="/news/{{ new.id }}">{{ new.title|truncatechars:20|censor }}</a>
+                {% endif %}
+            </td>
             <td>{{new.time_create|date:'d M Y'}}</td>
             <td>{{new.text_news|truncatechars:20|censor}}</td>
             <td>

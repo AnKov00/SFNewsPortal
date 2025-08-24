@@ -7,4 +7,4 @@ from .models import PostCategory
 @receiver(m2m_changed, sender=PostCategory)
 def post_created(sender, instance, action, **kwargs):
     if action == 'post_add':
-        send_post_notifications.delay(sender, instance, action, **kwargs)
+        send_post_notifications.delay(instance.id, **kwargs)
